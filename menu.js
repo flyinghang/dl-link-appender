@@ -1,4 +1,7 @@
+var menuTitle = "Append Link to Buffer";
+
 var links = "";
+var itemCount = 0 ;
 
 
 function updateClipboard(data){
@@ -29,19 +32,34 @@ function updateClipboard(data){
 function genericOnClick(info, tab) {
   //console.log("the links: " + links);
   //console.log("get url: " + info.linkUrl);
-
-  links = links + "\r\n\r\n"+ info.linkUrl;
+  updateBuffer(info.linkUrl);
 
   updateClipboard(links);
 }
 
+
+function updateBuffer(copied){
+  links = links + "\r\n\r\n"+ copied;
+  itemCount++;
+  updateMenuTitle(menuTitle + " ("+ itemCount+ ")");
+}
+
+function resetBuffer(){
+  links = "";
+  itemCount = 0 ;
+  updateMenuTitle(menuTitle);
+}
+
+function updateMenuTitle(newTitle){
+  chrome.contextMenus.update(menuId, {"title": newTitle});
+}
 
 // Create a parent item and two children.
 //var parent = chrome.contextMenus.create({"title": "Link To DL List"});
 
 
 // Create one test item for each context type.
-var id1 = chrome.contextMenus.create({"title": "Append Link to Clipboard", "contexts":["link"],
+var menuId = chrome.contextMenus.create({"title": menuTitle, "contexts":["link"],
                                       "onclick": genericOnClick});
 
 chrome.runtime.onMessage.addListener(
@@ -52,7 +70,7 @@ chrome.runtime.onMessage.addListener(
       console.log(links);
       console.log('links are pasted, now clear it all');
 
-      links = "";
+      resetBuffer();
 
       sendResponse({dl: "clear buffer OK"});
   });
